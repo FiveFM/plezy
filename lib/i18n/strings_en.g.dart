@@ -5997,6 +5997,7 @@ class Translations$riven$en {
 	/// en: 'Load more'
 	String get loadMore => 'Load more';
 
+	late final Translations$riven$hubs$en hubs = Translations$riven$hubs$en.internal(_root);
 	late final Translations$riven$states$en states = Translations$riven$states$en.internal(_root);
 
 	/// en: 'Could not reach ${url}: ${error}'
@@ -8012,6 +8013,27 @@ class Translations$companionRemote$errors$en {
 
 	/// en: 'Connection lost'
 	String get connectionLost => 'Connection lost';
+}
+
+// Path: riven.hubs
+class Translations$riven$hubs$en {
+	Translations$riven$hubs$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'In progress'
+	String get inProgress => 'In progress';
+
+	/// en: 'Needs attention'
+	String get needsAttention => 'Needs attention';
+
+	/// en: 'Recently added'
+	String get recentlyAdded => 'Recently added';
+
+	/// en: 'Coming soon'
+	String get comingSoon => 'Coming soon';
 }
 
 // Path: riven.states
@@ -10468,6 +10490,10 @@ extension on Translations {
 			'riven.queueEmpty' => 'Riven isn\'t working on anything right now.',
 			'riven.queueLoadFailed' => 'Couldn\'t load the Riven queue',
 			'riven.loadMore' => 'Load more',
+			'riven.hubs.inProgress' => 'In progress',
+			'riven.hubs.needsAttention' => 'Needs attention',
+			'riven.hubs.recentlyAdded' => 'Recently added',
+			'riven.hubs.comingSoon' => 'Coming soon',
 			'riven.states.unknown' => 'Unknown',
 			'riven.states.unreleased' => 'Not released yet',
 			'riven.states.ongoing' => 'Airing',

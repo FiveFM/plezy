@@ -2469,6 +2469,12 @@
     "queueEmpty": "Riven isn't working on anything right now.",
     "queueLoadFailed": "Couldn't load the Riven queue",
     "loadMore": "Load more",
+    "hubs": {
+      "inProgress": "In progress",
+      "needsAttention": "Needs attention",
+      "recentlyAdded": "Recently added",
+      "comingSoon": "Coming soon"
+    },
     "states": {
       "unknown": "Unknown",
       "unreleased": "Not released yet",

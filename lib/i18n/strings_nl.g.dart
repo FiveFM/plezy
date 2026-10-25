@@ -2416,6 +2416,7 @@ class _Translations$riven$nl extends Translations$riven$en {
 	@override String get queueEmpty => 'Riven is op dit moment nergens mee bezig.';
 	@override String get queueLoadFailed => 'Kon de wachtrij van Riven niet laden';
 	@override String get loadMore => 'Meer laden';
+	@override late final _Translations$riven$hubs$nl hubs = _Translations$riven$hubs$nl._(_root);
 	@override late final _Translations$riven$states$nl states = _Translations$riven$states$nl._(_root);
 	@override String couldNotReach({required Object url, required Object error}) => 'Kon ${url} niet bereiken: ${error}';
 	@override String noInstanceAtUrl({required Object url, required Object status}) => 'Geen Riven-installatie op ${url} (HTTP ${status})';
@@ -3354,6 +3355,19 @@ class _Translations$companionRemote$errors$nl extends Translations$companionRemo
 	@override String get failedToConnectAnyAddress => 'Er kon met geen enkel adres verbinding worden gemaakt';
 	@override String connectionLostAfterAttempts({required Object attempts}) => 'Verbinding verbroken na ${attempts} pogingen';
 	@override String get connectionLost => 'Verbinding verloren';
+}
+
+// Path: riven.hubs
+class _Translations$riven$hubs$nl extends Translations$riven$hubs$en {
+	_Translations$riven$hubs$nl._(TranslationsNl root) : this._root = root, super.internal(root);
+
+	final TranslationsNl _root; // ignore: unused_field
+
+	// Translations
+	@override String get inProgress => 'Bezig';
+	@override String get needsAttention => 'Vraagt aandacht';
+	@override String get recentlyAdded => 'Recent toegevoegd';
+	@override String get comingSoon => 'Binnenkort';
 }
 
 // Path: riven.states
@@ -5722,6 +5736,10 @@ extension on TranslationsNl {
 			'riven.queueEmpty' => 'Riven is op dit moment nergens mee bezig.',
 			'riven.queueLoadFailed' => 'Kon de wachtrij van Riven niet laden',
 			'riven.loadMore' => 'Meer laden',
+			'riven.hubs.inProgress' => 'Bezig',
+			'riven.hubs.needsAttention' => 'Vraagt aandacht',
+			'riven.hubs.recentlyAdded' => 'Recent toegevoegd',
+			'riven.hubs.comingSoon' => 'Binnenkort',
 			'riven.states.unknown' => 'Onbekend',
 			'riven.states.unreleased' => 'Nog niet uitgebracht',
 			'riven.states.ongoing' => 'Wordt uitgezonden',

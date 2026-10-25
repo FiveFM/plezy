@@ -67,6 +67,18 @@ class RivenItem {
   @JsonKey(name: 'requested_at', fromJson: _parseTimestamp)
   final DateTime? requestedAt;
 
+  /// Release date for a movie, first air date for a show.
+  @JsonKey(name: 'aired_at', fromJson: _parseTimestamp)
+  final DateTime? airedAt;
+
+  /// The indexer's genres, lowercased by Riven (`science fiction`).
+  final List<String>? genres;
+
+  /// TMDB vote average for movies; null for shows indexed through TVDB.
+  final double? rating;
+  @JsonKey(name: 'content_rating')
+  final String? contentRating;
+
   const RivenItem({
     required this.id,
     this.title,
@@ -77,6 +89,10 @@ class RivenItem {
     this.tvdbId,
     this.posterUrl,
     this.requestedAt,
+    this.airedAt,
+    this.genres,
+    this.rating,
+    this.contentRating,
   });
 
   MediaKind get kind => switch (type) {

@@ -12,7 +12,6 @@ import '../../widgets/app_icon.dart';
 import '../../widgets/catalog_source_logo.dart';
 import '../../widgets/focused_scroll_scaffold.dart';
 import '../../widgets/focusable_list_tile.dart';
-import '../../widgets/riven_mark.dart';
 import '../../widgets/setting_tile.dart';
 import '../../widgets/settings_section.dart';
 import 'riven_connect_screen.dart';
@@ -83,7 +82,7 @@ class ServicesSettingsScreen extends StatelessWidget {
 
   Widget _riven() => Consumer<RivenAccountProvider>(
     builder: (context, account, _) => _ServiceHubRow(
-      leading: const RivenMark(size: 24),
+      leading: const CatalogSourceLogo(CatalogSourceId.riven, size: 24),
       title: t.services.names.riven,
       username: account.isConnected ? account.displayName : null,
       onTap: () {

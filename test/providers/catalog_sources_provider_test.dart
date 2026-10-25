@@ -5,7 +5,9 @@ import 'package:plezy/media/media_kind.dart';
 import 'package:plezy/media/media_rating.dart';
 import 'package:plezy/media/media_server_client.dart';
 import 'package:plezy/models/catalog/catalog_item.dart';
+import 'package:plezy/models/riven/riven_session.dart';
 import 'package:plezy/providers/catalog_sources_provider.dart';
+import 'package:plezy/providers/riven_account_provider.dart';
 import 'package:plezy/providers/seerr_account_provider.dart';
 import 'package:plezy/providers/trackers_provider.dart';
 import 'package:plezy/services/catalog/catalog_source.dart';
@@ -111,17 +113,19 @@ void main() {
 
     final trackers = TrackersProvider();
     final seerr = SeerrAccountProvider();
+    final riven = RivenAccountProvider();
     final sources = CatalogSourcesProvider(plexSessionSupplier: () async => null);
     addTearDown(() {
       sources.dispose();
       trackers.dispose();
       seerr.dispose();
+      riven.dispose();
       MdblistTracker.instance.rebindSession(null, onSessionInvalidated: () {});
     });
 
     await trackers.onActiveProfileChanged(userUuid);
     await TrackerCoordinator.instance.flushWriteQueue();
-    sources.update(trackers, seerr);
+    sources.update(trackers, seerr, riven);
 
     expect(sources.connectedSources.map((source) => source.id), [CatalogSourceId.mdblist]);
     expect(sources.activeSource?.displayName, 'MDBList');
@@ -129,10 +133,53 @@ void main() {
 
     await trackers.onActiveProfileChanged('empty-profile');
     await TrackerCoordinator.instance.flushWriteQueue();
-    sources.update(trackers, seerr);
+    sources.update(trackers, seerr, riven);
 
     expect(sources.connectedSources, isEmpty);
     expect(sources.hasAnySource, isFalse);
+  });
+
+  test('a Riven connection exposes and removes the Riven catalog source', () async {
+    final trackers = TrackersProvider();
+    final seerr = SeerrAccountProvider();
+    final riven = RivenAccountProvider();
+    final sources = CatalogSourcesProvider(plexSessionSupplier: () async => null);
+    addTearDown(() {
+      sources.dispose();
+      trackers.dispose();
+      seerr.dispose();
+      riven.dispose();
+    });
+
+    await riven.adoptSession(
+      const RivenSession(
+        baseUrl: 'https://riven.example.com',
+        method: RivenAuthMethod.frontend,
+        identifier: 'alice',
+        secret: '',
+        cookie: 'cookie',
+        userId: 'user-1',
+        displayName: 'Alice',
+        version: '1.0.0',
+        createdAt: 0,
+      ),
+    );
+    sources.update(trackers, seerr, riven);
+
+    expect(sources.connectedSources.map((source) => source.id), [CatalogSourceId.riven]);
+    expect(sources.activeSource?.displayName, 'Riven');
+    expect(sources.watchlistCapableSource, isNull, reason: 'Riven has no watchlist');
+
+    // Riven's client changes only on rebind, so its session updates must not
+    // rebuild the source.
+    final source = sources.activeSource;
+    sources.update(trackers, seerr, riven);
+    expect(identical(sources.activeSource, source), isTrue);
+
+    await riven.disconnect();
+    sources.update(trackers, seerr, riven);
+
+    expect(sources.connectedSources, isEmpty);
   });
 
   group('watchlist candidate cache', () {

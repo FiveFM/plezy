@@ -7,6 +7,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../focus/focusable_button.dart';
 import '../i18n/app_locale_utils.dart';
 import '../i18n/strings.g.dart';
+import '../models/catalog/catalog_item.dart';
 import '../models/riven/riven_item.dart';
 import '../services/riven/riven_client.dart';
 import '../services/riven/riven_exceptions.dart';
@@ -14,9 +15,9 @@ import '../utils/app_logger.dart';
 import '../utils/dialogs.dart';
 import '../utils/snackbar_helper.dart';
 import 'app_icon.dart';
+import 'catalog_source_logo.dart';
 import 'loading_indicator_box.dart';
 import 'overlay_sheet.dart';
-import 'riven_mark.dart';
 
 /// What the Riven item sheet did before closing itself; the opener re-reads
 /// the item and reports it on its own scaffold, since the sheet is unmounting.
@@ -166,7 +167,7 @@ class _RivenItemSheetState extends State<RivenItemSheet> {
         children: [
           Row(
             children: [
-              const RivenMark(size: 22),
+              const CatalogSourceLogo(CatalogSourceId.riven, size: 22),
               const SizedBox(width: 10),
               Text(t.riven.title, style: theme.textTheme.titleLarge),
             ],

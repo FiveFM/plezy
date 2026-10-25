@@ -55,13 +55,13 @@ import '../widgets/app_bar_back_button.dart';
 import '../widgets/app_icon.dart';
 import '../widgets/backend_badge.dart';
 import '../widgets/cast_member_strip.dart';
+import '../widgets/catalog_source_logo.dart';
 import '../widgets/collapsible_text.dart';
 import '../widgets/focusable_list_tile.dart';
 import '../widgets/hub_section.dart';
 import '../widgets/optimized_media_image.dart';
 import '../widgets/overlay_sheet.dart';
 import '../widgets/riven_item_sheet.dart';
-import '../widgets/riven_mark.dart';
 import '../widgets/seerr_request_sheet.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/stat_chip.dart';
@@ -944,7 +944,9 @@ class _CatalogItemDetailScreenState extends State<CatalogItemDetailScreen> {
       if (audience.comments case final count?) add(t.explore.stats.comments(n: count));
     }
 
-    final server = item.serverState;
+    // A Riven row's server state is Riven's state when the row loaded; once
+    // the live read below arrives, the Riven chip supersedes that snapshot.
+    final server = item.source == CatalogSourceId.riven && _rivenState != null ? null : item.serverState;
     if (server != null) {
       if (server.availability case final availability?) {
         add(availabilityLabel(availability, is4k: false));
@@ -962,7 +964,7 @@ class _CatalogItemDetailScreenState extends State<CatalogItemDetailScreen> {
     if (_rivenState case final RivenItemState state) {
       chips.add(
         StatChip(
-          leading: const RivenMark(size: 14),
+          leading: const CatalogSourceLogo(CatalogSourceId.riven, size: 14),
           label: t.riven.status(state: rivenStateLabel(state)),
         ),
       );

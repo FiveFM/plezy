@@ -198,9 +198,10 @@ class _ProfileSessionScreenState extends State<ProfileSessionScreen> {
                   return provider;
                 },
               ),
-              ChangeNotifierProxyProvider3<
+              ChangeNotifierProxyProvider4<
                 TrackersProvider,
                 SeerrAccountProvider,
+                RivenAccountProvider,
                 ActiveProfileProvider,
                 CatalogSourcesProvider
               >(
@@ -213,9 +214,9 @@ class _ProfileSessionScreenState extends State<ProfileSessionScreen> {
                   );
                   return provider;
                 },
-                update: (context, trackers, seerr, activeProfile, previous) {
+                update: (context, trackers, seerr, riven, activeProfile, previous) {
                   final provider = previous ?? _createCatalogSourcesProvider(context);
-                  provider.update(trackers, seerr);
+                  provider.update(trackers, seerr, riven);
                   unawaited(provider.onProfileBindingStateChanged(activeProfile.isBinding));
                   return provider;
                 },

@@ -2493,6 +2493,12 @@
     "queueEmpty": "",
     "queueLoadFailed": "",
     "loadMore": "",
+    "hubs": {
+      "inProgress": "",
+      "needsAttention": "",
+      "recentlyAdded": "",
+      "comingSoon": ""
+    },
     "states": {
       "unknown": "",
       "unreleased": "",

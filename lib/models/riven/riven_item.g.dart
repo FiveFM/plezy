@@ -16,6 +16,10 @@ RivenItem _$RivenItemFromJson(Map<String, dynamic> json) => RivenItem(
   tvdbId: json['tvdb_id'] as String?,
   posterUrl: json['poster_path'] as String?,
   requestedAt: _parseTimestamp(json['requested_at']),
+  airedAt: _parseTimestamp(json['aired_at']),
+  genres: (json['genres'] as List<dynamic>?)?.map((e) => e as String).toList(),
+  rating: (json['rating'] as num?)?.toDouble(),
+  contentRating: json['content_rating'] as String?,
 );
 
 RivenItemPage _$RivenItemPageFromJson(Map<String, dynamic> json) =>

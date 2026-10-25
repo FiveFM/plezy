@@ -2469,6 +2469,12 @@
     "queueEmpty": "Riven is op dit moment nergens mee bezig.",
     "queueLoadFailed": "Kon de wachtrij van Riven niet laden",
     "loadMore": "Meer laden",
+    "hubs": {
+      "inProgress": "Bezig",
+      "needsAttention": "Vraagt aandacht",
+      "recentlyAdded": "Recent toegevoegd",
+      "comingSoon": "Binnenkort"
+    },
     "states": {
       "unknown": "Onbekend",
       "unreleased": "Nog niet uitgebracht",

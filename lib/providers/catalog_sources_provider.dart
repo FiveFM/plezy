@@ -22,17 +22,20 @@ import '../services/catalog/anilist_catalog_source.dart';
 import '../services/catalog/mdblist_catalog_source.dart';
 import '../services/catalog/mal_catalog_source.dart';
 import '../services/catalog/plex_catalog_source.dart';
+import '../services/catalog/riven_catalog_source.dart';
 import '../services/catalog/seerr_catalog_source.dart';
 import '../services/catalog/simkl_catalog_source.dart';
 import '../services/catalog/trakt_catalog_source.dart';
 import '../services/trackers/future_coalescer.dart';
 import '../services/plex_discover_client.dart';
+import '../services/riven/riven_client.dart';
 import '../services/seerr/seerr_client.dart';
 import '../services/trackers/anilist/anilist_client.dart';
 import '../services/trackers/mal/mal_client.dart';
 import '../services/trackers/mdblist/mdblist_client.dart';
 import '../services/trackers/simkl/simkl_client.dart';
 import '../services/trackers/trakt/trakt_client.dart';
+import 'riven_account_provider.dart';
 import 'seerr_account_provider.dart';
 import 'trackers_provider.dart';
 import '../utils/platform_detector.dart';
@@ -93,7 +96,7 @@ class _CatalogSourceBinding<Client extends Object, Source extends CatalogSource>
 /// which one the Explore tab shows.
 ///
 /// Profile-scoped. Plex Discover credentials hydrate with the active profile;
-/// tracker/Seerr sources are rebuilt through the proxy-provider update hook so
+/// tracker/Seerr/Riven sources are rebuilt through the proxy-provider update hook so
 /// every source appears and disappears with its owning account connection
 /// (which also drives the Explore tab's visibility).
 class CatalogSourcesProvider extends ChangeNotifier with DisposableChangeNotifierMixin {
@@ -118,6 +121,7 @@ class CatalogSourcesProvider extends ChangeNotifier with DisposableChangeNotifie
     MdblistCatalogSource.new,
   );
   final _CatalogSourceBinding<SeerrClient, SeerrCatalogSource> _seerr = _CatalogSourceBinding(SeerrCatalogSource.new);
+  final _CatalogSourceBinding<RivenClient, RivenCatalogSource> _riven = _CatalogSourceBinding(RivenCatalogSource.new);
   int _profileBindingGeneration = 0;
   int _plexSessionGeneration = 0;
   bool? _lastProfileBindingState;
@@ -146,6 +150,7 @@ class CatalogSourcesProvider extends ChangeNotifier with DisposableChangeNotifie
     ?_mdblist.source,
     ?_plex.source,
     ?_seerr.source,
+    ?_riven.source,
   ];
 
   bool get hasAnySource => connectedSources.isNotEmpty;
@@ -347,7 +352,7 @@ class CatalogSourcesProvider extends ChangeNotifier with DisposableChangeNotifie
 
   /// Proxy-provider update hook: rebuild a source when its catalog client
   /// was rebound (connect/disconnect/profile switch).
-  void update(TrackersProvider trackers, SeerrAccountProvider seerr) {
+  void update(TrackersProvider trackers, SeerrAccountProvider seerr, RivenAccountProvider riven) {
     var changed = false;
     changed = _trakt.update(trackers.traktCatalogClient) || changed;
     changed = _mal.update(trackers.malCatalogClient) || changed;
@@ -355,6 +360,7 @@ class CatalogSourcesProvider extends ChangeNotifier with DisposableChangeNotifie
     changed = _simkl.update(trackers.simklCatalogClient) || changed;
     changed = _mdblist.update(trackers.mdblistCatalogClient) || changed;
     changed = _seerr.update(seerr.catalogClient) || changed;
+    changed = _riven.update(riven.client) || changed;
     if (changed) {
       _invalidateWatchlistCandidates();
       safeNotifyListeners();
@@ -370,6 +376,7 @@ class CatalogSourcesProvider extends ChangeNotifier with DisposableChangeNotifie
     _mdblist.dispose();
     _simkl.dispose();
     _seerr.dispose();
+    _riven.dispose();
     super.dispose();
   }
 }
