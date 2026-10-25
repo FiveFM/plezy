@@ -91,6 +91,7 @@ class TranslationsNl extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$serverTasks$nl serverTasks = _Translations$serverTasks$nl._(_root);
 	@override late final _Translations$trakt$nl trakt = _Translations$trakt$nl._(_root);
 	@override late final _Translations$seerr$nl seerr = _Translations$seerr$nl._(_root);
+	@override late final _Translations$riven$nl riven = _Translations$riven$nl._(_root);
 	@override late final _Translations$services$nl services = _Translations$services$nl._(_root);
 	@override late final _Translations$addServer$nl addServer = _Translations$addServer$nl._(_root);
 }
@@ -2377,6 +2378,58 @@ class _Translations$seerr$nl extends Translations$seerr$en {
 	@override String get permissionRevoked => 'Je hebt geen toestemming meer om dit aan te vragen';
 }
 
+// Path: riven
+class _Translations$riven$nl extends Translations$riven$en {
+	_Translations$riven$nl._(TranslationsNl root) : this._root = root, super.internal(root);
+
+	final TranslationsNl _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Riven';
+	@override String get connectTitle => 'Verbinden met Riven';
+	@override String get serverUrl => 'Riven-URL';
+	@override String get serverUrlHelper => 'Het adres van je Riven-webapp, of van de Riven-backend zelf';
+	@override String get checkServer => 'Doorgaan';
+	@override String get frontendInstance => 'Riven-webapp';
+	@override String get backendInstance => 'Riven-backend';
+	@override String get apiKey => 'API-sleutel';
+	@override String get apiKeyHelper => 'De api_key uit de instellingen van Riven';
+	@override String versionLabel({required Object version}) => 'Riven ${version}';
+	@override String get disconnectConfirm => 'Riven loskoppelen?';
+	@override String get disconnectConfirmBody => 'Plezy vergeet deze Riven-installatie. Je kunt altijd opnieuw verbinden.';
+	@override String get request => 'Ophalen met Riven';
+	@override String get requestSubmitted => 'Naar Riven gestuurd';
+	@override String requestFailed({required Object error}) => 'Kon niet naar Riven sturen: ${error}';
+	@override String status({required Object state}) => 'Riven: ${state}';
+	@override String requestedOn({required Object date}) => 'Aangevraagd op ${date}';
+	@override String get retry => 'Opnieuw proberen';
+	@override String get retryStarted => 'Riven probeert het opnieuw';
+	@override String get reset => 'Andere release zoeken';
+	@override String get resetStarted => 'Riven zoekt een andere release';
+	@override String get remove => 'Verwijderen uit Riven';
+	@override String removeConfirm({required Object title}) => '${title} verwijderen uit Riven?';
+	@override String get removeConfirmBody => 'Riven volgt deze titel niet meer en verwijdert de bestanden uit je bibliotheek.';
+	@override String get removed => 'Verwijderd uit Riven';
+	@override String actionFailed({required Object error}) => 'Riven kon dat niet doen: ${error}';
+	@override String get queue => 'Wachtrij';
+	@override String get queueSubtitle => 'Waar Riven nog mee bezig is';
+	@override String get queueEmpty => 'Riven is op dit moment nergens mee bezig.';
+	@override String get queueLoadFailed => 'Kon de wachtrij van Riven niet laden';
+	@override String get loadMore => 'Meer laden';
+	@override late final _Translations$riven$states$nl states = _Translations$riven$states$nl._(_root);
+	@override String couldNotReach({required Object url, required Object error}) => 'Kon ${url} niet bereiken: ${error}';
+	@override String noInstanceAtUrl({required Object url, required Object status}) => 'Geen Riven-installatie op ${url} (HTTP ${status})';
+	@override String get behindAuthProxy => 'Een authenticerende reverse proxy (SSO of HTTP-auth) heeft geantwoord in plaats van Riven. Plezy kan hierdoor niet inloggen: laat Riven de proxy omzeilen voor deze app, of gebruik een adres dat Riven direct bereikt.';
+	@override String get invalidUrl => 'Voer een adres in, zoals https://riven.example.com';
+	@override String get signInRejected => 'Inloggen is geweigerd';
+	@override String get apiKeyRejected => 'Riven heeft de API-sleutel geweigerd';
+	@override String get noSessionCookie => 'Riven heeft geen sessiecookie verstrekt';
+	@override String get freshCookieRejected => 'Riven heeft de nieuwe sessiecookie geweigerd';
+	@override String get noUserInformation => 'Riven heeft geen gebruikersgegevens geretourneerd';
+	@override String get noStoredCredentials => 'Er zijn geen opgeslagen inloggegevens beschikbaar om opnieuw in te loggen';
+	@override String get sessionRejectedAfterReauth => 'De sessie is na het opnieuw inloggen geweigerd';
+}
+
 // Path: services
 class _Translations$services$nl extends Translations$services$en {
 	_Translations$services$nl._(TranslationsNl root) : this._root = root, super.internal(root);
@@ -3303,6 +3356,27 @@ class _Translations$companionRemote$errors$nl extends Translations$companionRemo
 	@override String get connectionLost => 'Verbinding verloren';
 }
 
+// Path: riven.states
+class _Translations$riven$states$nl extends Translations$riven$states$en {
+	_Translations$riven$states$nl._(TranslationsNl root) : this._root = root, super.internal(root);
+
+	final TranslationsNl _root; // ignore: unused_field
+
+	// Translations
+	@override String get unknown => 'Onbekend';
+	@override String get unreleased => 'Nog niet uitgebracht';
+	@override String get ongoing => 'Wordt uitgezonden';
+	@override String get requested => 'Aangevraagd';
+	@override String get indexed => 'In de wachtrij';
+	@override String get scraped => 'Release gevonden';
+	@override String get downloaded => 'Gedownload';
+	@override String get symlinked => 'Wordt toegevoegd aan bibliotheek';
+	@override String get completed => 'In je bibliotheek';
+	@override String get partiallyCompleted => 'Deels in je bibliotheek';
+	@override String get failed => 'Mislukt';
+	@override String get paused => 'Gepauzeerd';
+}
+
 // Path: services.names
 class _Translations$services$names$nl extends Translations$services$names$en {
 	_Translations$services$names$nl._(TranslationsNl root) : this._root = root, super.internal(root);
@@ -3314,6 +3388,7 @@ class _Translations$services$names$nl extends Translations$services$names$en {
 	@override String get anilist => 'AniList';
 	@override String get simkl => 'Simkl';
 	@override String get seerr => 'Seerr';
+	@override String get riven => 'Riven';
 	@override String get mdblist => 'MDBList';
 }
 
@@ -5616,6 +5691,60 @@ extension on TranslationsNl {
 			'seerr.sessionRejectedAfterReauth' => 'De sessie is na het opnieuw inloggen geweigerd',
 			'seerr.permissionDenied' => 'Seerr heeft deze actie geweigerd: je account heeft niet langer de vereiste machtiging',
 			'seerr.permissionRevoked' => 'Je hebt geen toestemming meer om dit aan te vragen',
+			'riven.title' => 'Riven',
+			'riven.connectTitle' => 'Verbinden met Riven',
+			'riven.serverUrl' => 'Riven-URL',
+			'riven.serverUrlHelper' => 'Het adres van je Riven-webapp, of van de Riven-backend zelf',
+			'riven.checkServer' => 'Doorgaan',
+			'riven.frontendInstance' => 'Riven-webapp',
+			'riven.backendInstance' => 'Riven-backend',
+			'riven.apiKey' => 'API-sleutel',
+			'riven.apiKeyHelper' => 'De api_key uit de instellingen van Riven',
+			'riven.versionLabel' => ({required Object version}) => 'Riven ${version}',
+			'riven.disconnectConfirm' => 'Riven loskoppelen?',
+			'riven.disconnectConfirmBody' => 'Plezy vergeet deze Riven-installatie. Je kunt altijd opnieuw verbinden.',
+			'riven.request' => 'Ophalen met Riven',
+			'riven.requestSubmitted' => 'Naar Riven gestuurd',
+			'riven.requestFailed' => ({required Object error}) => 'Kon niet naar Riven sturen: ${error}',
+			'riven.status' => ({required Object state}) => 'Riven: ${state}',
+			'riven.requestedOn' => ({required Object date}) => 'Aangevraagd op ${date}',
+			'riven.retry' => 'Opnieuw proberen',
+			'riven.retryStarted' => 'Riven probeert het opnieuw',
+			'riven.reset' => 'Andere release zoeken',
+			'riven.resetStarted' => 'Riven zoekt een andere release',
+			'riven.remove' => 'Verwijderen uit Riven',
+			'riven.removeConfirm' => ({required Object title}) => '${title} verwijderen uit Riven?',
+			'riven.removeConfirmBody' => 'Riven volgt deze titel niet meer en verwijdert de bestanden uit je bibliotheek.',
+			'riven.removed' => 'Verwijderd uit Riven',
+			'riven.actionFailed' => ({required Object error}) => 'Riven kon dat niet doen: ${error}',
+			'riven.queue' => 'Wachtrij',
+			'riven.queueSubtitle' => 'Waar Riven nog mee bezig is',
+			'riven.queueEmpty' => 'Riven is op dit moment nergens mee bezig.',
+			'riven.queueLoadFailed' => 'Kon de wachtrij van Riven niet laden',
+			'riven.loadMore' => 'Meer laden',
+			'riven.states.unknown' => 'Onbekend',
+			'riven.states.unreleased' => 'Nog niet uitgebracht',
+			'riven.states.ongoing' => 'Wordt uitgezonden',
+			'riven.states.requested' => 'Aangevraagd',
+			'riven.states.indexed' => 'In de wachtrij',
+			'riven.states.scraped' => 'Release gevonden',
+			'riven.states.downloaded' => 'Gedownload',
+			'riven.states.symlinked' => 'Wordt toegevoegd aan bibliotheek',
+			'riven.states.completed' => 'In je bibliotheek',
+			'riven.states.partiallyCompleted' => 'Deels in je bibliotheek',
+			'riven.states.failed' => 'Mislukt',
+			'riven.states.paused' => 'Gepauzeerd',
+			'riven.couldNotReach' => ({required Object url, required Object error}) => 'Kon ${url} niet bereiken: ${error}',
+			'riven.noInstanceAtUrl' => ({required Object url, required Object status}) => 'Geen Riven-installatie op ${url} (HTTP ${status})',
+			'riven.behindAuthProxy' => 'Een authenticerende reverse proxy (SSO of HTTP-auth) heeft geantwoord in plaats van Riven. Plezy kan hierdoor niet inloggen: laat Riven de proxy omzeilen voor deze app, of gebruik een adres dat Riven direct bereikt.',
+			'riven.invalidUrl' => 'Voer een adres in, zoals https://riven.example.com',
+			'riven.signInRejected' => 'Inloggen is geweigerd',
+			'riven.apiKeyRejected' => 'Riven heeft de API-sleutel geweigerd',
+			'riven.noSessionCookie' => 'Riven heeft geen sessiecookie verstrekt',
+			'riven.freshCookieRejected' => 'Riven heeft de nieuwe sessiecookie geweigerd',
+			'riven.noUserInformation' => 'Riven heeft geen gebruikersgegevens geretourneerd',
+			'riven.noStoredCredentials' => 'Er zijn geen opgeslagen inloggegevens beschikbaar om opnieuw in te loggen',
+			'riven.sessionRejectedAfterReauth' => 'De sessie is na het opnieuw inloggen geweigerd',
 			'services.title' => 'Diensten',
 			'services.hubSubtitle' => 'Synchroniseer kijkvoortgang en vraag nieuwe titels aan.',
 			'services.integrations' => 'Integraties',
@@ -5630,6 +5759,7 @@ extension on TranslationsNl {
 			'services.names.anilist' => 'AniList',
 			'services.names.simkl' => 'Simkl',
 			'services.names.seerr' => 'Seerr',
+			'services.names.riven' => 'Riven',
 			'services.names.mdblist' => 'MDBList',
 			'services.simklReconnect.title' => 'Simkl opnieuw verbinden',
 			'services.simklReconnect.subtitle' => 'Simkl stopt met de aanmeldmethode die deze verbinding gebruikt. Bij opnieuw verbinden wordt simkl.com geopend om Plezy goed te keuren — Plezy ziet je wachtwoord nooit. Je kijkgeschiedenis blijft op Simkl.',

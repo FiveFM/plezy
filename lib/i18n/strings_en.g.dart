@@ -92,6 +92,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$serverTasks$en serverTasks = Translations$serverTasks$en.internal(_root);
 	late final Translations$trakt$en trakt = Translations$trakt$en.internal(_root);
 	late final Translations$seerr$en seerr = Translations$seerr$en.internal(_root);
+	late final Translations$riven$en riven = Translations$riven$en.internal(_root);
 	late final Translations$services$en services = Translations$services$en.internal(_root);
 	late final Translations$addServer$en addServer = Translations$addServer$en.internal(_root);
 }
@@ -5895,6 +5896,143 @@ class Translations$seerr$en {
 	String get permissionRevoked => 'You no longer have permission to request this';
 }
 
+// Path: riven
+class Translations$riven$en {
+	Translations$riven$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Riven'
+	String get title => 'Riven';
+
+	/// en: 'Connect Riven'
+	String get connectTitle => 'Connect Riven';
+
+	/// en: 'Riven URL'
+	String get serverUrl => 'Riven URL';
+
+	/// en: 'The address of your Riven web app, or of the Riven backend itself'
+	String get serverUrlHelper => 'The address of your Riven web app, or of the Riven backend itself';
+
+	/// en: 'Continue'
+	String get checkServer => 'Continue';
+
+	/// en: 'Riven web app'
+	String get frontendInstance => 'Riven web app';
+
+	/// en: 'Riven backend'
+	String get backendInstance => 'Riven backend';
+
+	/// en: 'API key'
+	String get apiKey => 'API key';
+
+	/// en: 'The api_key from Riven's settings'
+	String get apiKeyHelper => 'The api_key from Riven\'s settings';
+
+	/// en: 'Riven ${version}'
+	String versionLabel({required Object version}) => 'Riven ${version}';
+
+	/// en: 'Disconnect Riven?'
+	String get disconnectConfirm => 'Disconnect Riven?';
+
+	/// en: 'Plezy will forget this Riven install. Reconnect any time.'
+	String get disconnectConfirmBody => 'Plezy will forget this Riven install. Reconnect any time.';
+
+	/// en: 'Get with Riven'
+	String get request => 'Get with Riven';
+
+	/// en: 'Sent to Riven'
+	String get requestSubmitted => 'Sent to Riven';
+
+	/// en: 'Couldn't send to Riven: ${error}'
+	String requestFailed({required Object error}) => 'Couldn\'t send to Riven: ${error}';
+
+	/// en: 'Riven: ${state}'
+	String status({required Object state}) => 'Riven: ${state}';
+
+	/// en: 'Requested ${date}'
+	String requestedOn({required Object date}) => 'Requested ${date}';
+
+	/// en: 'Retry'
+	String get retry => 'Retry';
+
+	/// en: 'Riven is trying again'
+	String get retryStarted => 'Riven is trying again';
+
+	/// en: 'Find a different release'
+	String get reset => 'Find a different release';
+
+	/// en: 'Riven is looking for a different release'
+	String get resetStarted => 'Riven is looking for a different release';
+
+	/// en: 'Remove from Riven'
+	String get remove => 'Remove from Riven';
+
+	/// en: 'Remove ${title} from Riven?'
+	String removeConfirm({required Object title}) => 'Remove ${title} from Riven?';
+
+	/// en: 'Riven stops tracking it and removes its files from your library.'
+	String get removeConfirmBody => 'Riven stops tracking it and removes its files from your library.';
+
+	/// en: 'Removed from Riven'
+	String get removed => 'Removed from Riven';
+
+	/// en: 'Riven couldn't do that: ${error}'
+	String actionFailed({required Object error}) => 'Riven couldn\'t do that: ${error}';
+
+	/// en: 'Queue'
+	String get queue => 'Queue';
+
+	/// en: 'What Riven is still working on'
+	String get queueSubtitle => 'What Riven is still working on';
+
+	/// en: 'Riven isn't working on anything right now.'
+	String get queueEmpty => 'Riven isn\'t working on anything right now.';
+
+	/// en: 'Couldn't load the Riven queue'
+	String get queueLoadFailed => 'Couldn\'t load the Riven queue';
+
+	/// en: 'Load more'
+	String get loadMore => 'Load more';
+
+	late final Translations$riven$states$en states = Translations$riven$states$en.internal(_root);
+
+	/// en: 'Could not reach ${url}: ${error}'
+	String couldNotReach({required Object url, required Object error}) => 'Could not reach ${url}: ${error}';
+
+	/// en: 'No Riven install at ${url} (HTTP ${status})'
+	String noInstanceAtUrl({required Object url, required Object status}) => 'No Riven install at ${url} (HTTP ${status})';
+
+	/// en: 'An authenticating reverse proxy (SSO or HTTP auth) answered instead of Riven. Plezy cannot sign in through it: let Riven bypass the proxy for this app, or use an address that reaches Riven directly.'
+	String get behindAuthProxy => 'An authenticating reverse proxy (SSO or HTTP auth) answered instead of Riven. Plezy cannot sign in through it: let Riven bypass the proxy for this app, or use an address that reaches Riven directly.';
+
+	/// en: 'Enter an address like https://riven.example.com'
+	String get invalidUrl => 'Enter an address like https://riven.example.com';
+
+	/// en: 'Sign-in was rejected'
+	String get signInRejected => 'Sign-in was rejected';
+
+	/// en: 'Riven rejected the API key'
+	String get apiKeyRejected => 'Riven rejected the API key';
+
+	/// en: 'Riven did not issue a session cookie'
+	String get noSessionCookie => 'Riven did not issue a session cookie';
+
+	/// en: 'Riven rejected the new session cookie'
+	String get freshCookieRejected => 'Riven rejected the new session cookie';
+
+	/// en: 'Riven did not return user information'
+	String get noUserInformation => 'Riven did not return user information';
+
+	/// en: 'No stored credentials are available to sign in again'
+	String get noStoredCredentials => 'No stored credentials are available to sign in again';
+
+	/// en: 'The session was rejected after signing in again'
+	String get sessionRejectedAfterReauth => 'The session was rejected after signing in again';
+}
+
 // Path: services
 class Translations$services$en {
 	Translations$services$en.internal(this._root);
@@ -7876,6 +8014,51 @@ class Translations$companionRemote$errors$en {
 	String get connectionLost => 'Connection lost';
 }
 
+// Path: riven.states
+class Translations$riven$states$en {
+	Translations$riven$states$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Unknown'
+	String get unknown => 'Unknown';
+
+	/// en: 'Not released yet'
+	String get unreleased => 'Not released yet';
+
+	/// en: 'Airing'
+	String get ongoing => 'Airing';
+
+	/// en: 'Requested'
+	String get requested => 'Requested';
+
+	/// en: 'Queued'
+	String get indexed => 'Queued';
+
+	/// en: 'Release found'
+	String get scraped => 'Release found';
+
+	/// en: 'Downloaded'
+	String get downloaded => 'Downloaded';
+
+	/// en: 'Adding to library'
+	String get symlinked => 'Adding to library';
+
+	/// en: 'In your library'
+	String get completed => 'In your library';
+
+	/// en: 'Partly in your library'
+	String get partiallyCompleted => 'Partly in your library';
+
+	/// en: 'Failed'
+	String get failed => 'Failed';
+
+	/// en: 'Paused'
+	String get paused => 'Paused';
+}
+
 // Path: services.names
 class Translations$services$names$en {
 	Translations$services$names$en.internal(this._root);
@@ -7895,6 +8078,9 @@ class Translations$services$names$en {
 
 	/// en: 'Seerr'
 	String get seerr => 'Seerr';
+
+	/// en: 'Riven'
+	String get riven => 'Riven';
 
 	/// en: 'MDBList'
 	String get mdblist => 'MDBList';
@@ -10251,6 +10437,60 @@ extension on Translations {
 			'seerr.sessionRejectedAfterReauth' => 'The session was rejected after signing in again',
 			'seerr.permissionDenied' => 'Seerr denied this action: your account no longer has the required permission',
 			'seerr.permissionRevoked' => 'You no longer have permission to request this',
+			'riven.title' => 'Riven',
+			'riven.connectTitle' => 'Connect Riven',
+			'riven.serverUrl' => 'Riven URL',
+			'riven.serverUrlHelper' => 'The address of your Riven web app, or of the Riven backend itself',
+			'riven.checkServer' => 'Continue',
+			'riven.frontendInstance' => 'Riven web app',
+			'riven.backendInstance' => 'Riven backend',
+			'riven.apiKey' => 'API key',
+			'riven.apiKeyHelper' => 'The api_key from Riven\'s settings',
+			'riven.versionLabel' => ({required Object version}) => 'Riven ${version}',
+			'riven.disconnectConfirm' => 'Disconnect Riven?',
+			'riven.disconnectConfirmBody' => 'Plezy will forget this Riven install. Reconnect any time.',
+			'riven.request' => 'Get with Riven',
+			'riven.requestSubmitted' => 'Sent to Riven',
+			'riven.requestFailed' => ({required Object error}) => 'Couldn\'t send to Riven: ${error}',
+			'riven.status' => ({required Object state}) => 'Riven: ${state}',
+			'riven.requestedOn' => ({required Object date}) => 'Requested ${date}',
+			'riven.retry' => 'Retry',
+			'riven.retryStarted' => 'Riven is trying again',
+			'riven.reset' => 'Find a different release',
+			'riven.resetStarted' => 'Riven is looking for a different release',
+			'riven.remove' => 'Remove from Riven',
+			'riven.removeConfirm' => ({required Object title}) => 'Remove ${title} from Riven?',
+			'riven.removeConfirmBody' => 'Riven stops tracking it and removes its files from your library.',
+			'riven.removed' => 'Removed from Riven',
+			'riven.actionFailed' => ({required Object error}) => 'Riven couldn\'t do that: ${error}',
+			'riven.queue' => 'Queue',
+			'riven.queueSubtitle' => 'What Riven is still working on',
+			'riven.queueEmpty' => 'Riven isn\'t working on anything right now.',
+			'riven.queueLoadFailed' => 'Couldn\'t load the Riven queue',
+			'riven.loadMore' => 'Load more',
+			'riven.states.unknown' => 'Unknown',
+			'riven.states.unreleased' => 'Not released yet',
+			'riven.states.ongoing' => 'Airing',
+			'riven.states.requested' => 'Requested',
+			'riven.states.indexed' => 'Queued',
+			'riven.states.scraped' => 'Release found',
+			'riven.states.downloaded' => 'Downloaded',
+			'riven.states.symlinked' => 'Adding to library',
+			'riven.states.completed' => 'In your library',
+			'riven.states.partiallyCompleted' => 'Partly in your library',
+			'riven.states.failed' => 'Failed',
+			'riven.states.paused' => 'Paused',
+			'riven.couldNotReach' => ({required Object url, required Object error}) => 'Could not reach ${url}: ${error}',
+			'riven.noInstanceAtUrl' => ({required Object url, required Object status}) => 'No Riven install at ${url} (HTTP ${status})',
+			'riven.behindAuthProxy' => 'An authenticating reverse proxy (SSO or HTTP auth) answered instead of Riven. Plezy cannot sign in through it: let Riven bypass the proxy for this app, or use an address that reaches Riven directly.',
+			'riven.invalidUrl' => 'Enter an address like https://riven.example.com',
+			'riven.signInRejected' => 'Sign-in was rejected',
+			'riven.apiKeyRejected' => 'Riven rejected the API key',
+			'riven.noSessionCookie' => 'Riven did not issue a session cookie',
+			'riven.freshCookieRejected' => 'Riven rejected the new session cookie',
+			'riven.noUserInformation' => 'Riven did not return user information',
+			'riven.noStoredCredentials' => 'No stored credentials are available to sign in again',
+			'riven.sessionRejectedAfterReauth' => 'The session was rejected after signing in again',
 			'services.title' => 'Services',
 			'services.hubSubtitle' => 'Sync watch progress and request new titles.',
 			'services.integrations' => 'Integrations',
@@ -10265,6 +10505,7 @@ extension on Translations {
 			'services.names.anilist' => 'AniList',
 			'services.names.simkl' => 'Simkl',
 			'services.names.seerr' => 'Seerr',
+			'services.names.riven' => 'Riven',
 			'services.names.mdblist' => 'MDBList',
 			'services.simklReconnect.title' => 'Reconnect Simkl',
 			'services.simklReconnect.subtitle' => 'Simkl is retiring the sign-in method this connection uses. Reconnecting opens simkl.com to approve Plezy — Plezy never sees your password. Your watch history stays on Simkl.',

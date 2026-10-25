@@ -13,6 +13,8 @@
 ///   AniList, Simkl, Trakt and MDBList live here in plaintext.
 /// * Seerr sessions — `SeerrSessionStore` persists a raw `connect.sid` cookie
 ///   alongside a vault-protected password.
+/// * Riven sessions — `RivenSessionStore` persists a raw `riven.session_token`
+///   cookie alongside a vault-protected password or API key.
 /// * [legacyPlexTokenPref] — the pre-connection-registry Plex token slot. It is
 ///   drained by the connection migration but can linger on old installs.
 ///
@@ -27,9 +29,9 @@
 /// Keep this list exhaustive. A credential slot that is missing here is
 /// silently dropped on a type mismatch and silently lost on a repair.
 ///
-/// This lives apart from `CredentialVault`, `TrackerAccountStore` and
-/// `SeerrSessionStore` so `BaseSharedPreferencesService` can depend on it
-/// without an import cycle.
+/// This lives apart from `CredentialVault`, `TrackerAccountStore`,
+/// `SeerrSessionStore` and `RivenSessionStore` so `BaseSharedPreferencesService`
+/// can depend on it without an import cycle.
 library;
 
 /// Key holding the base64 `CredentialVault` AES-256 key.
@@ -50,9 +52,16 @@ const List<String> trackerSessionBaseKeys = <String>[
 /// Unscoped base key used by `SeerrSessionStore`.
 const String seerrSessionBaseKey = 'seerr_session';
 
+/// Unscoped base key used by `RivenSessionStore`.
+const String rivenSessionBaseKey = 'riven_session';
+
 /// Every credential slot that is profile-scoped through `profileScopedPrefsKey`,
 /// so a stored key is either the bare base key or `user_{scope}_{baseKey}`.
-const List<String> profileScopedCredentialBaseKeys = <String>[...trackerSessionBaseKeys, seerrSessionBaseKey];
+const List<String> profileScopedCredentialBaseKeys = <String>[
+  ...trackerSessionBaseKeys,
+  seerrSessionBaseKey,
+  rivenSessionBaseKey,
+];
 
 final RegExp _profileScopedCredentialPattern = RegExp(
   '^(?:user_.+_)?(?:${profileScopedCredentialBaseKeys.join('|')})\$',
@@ -70,6 +79,9 @@ String? profileScopedCredentialBaseKey(String key) {
 
 /// Whether [key] is a profile-scoped or global Seerr session slot.
 bool isSeerrSessionPrefKey(String key) => profileScopedCredentialBaseKey(key) == seerrSessionBaseKey;
+
+/// Whether [key] is a profile-scoped or global Riven session slot.
+bool isRivenSessionPrefKey(String key) => profileScopedCredentialBaseKey(key) == rivenSessionBaseKey;
 
 /// Whether [key] holds a credential and must never be dropped or exported
 /// without an explicit, informed user decision.

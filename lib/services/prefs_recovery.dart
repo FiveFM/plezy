@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../models/riven/riven_session.dart';
 import '../models/seerr/seerr_session.dart';
 import '../utils/app_logger.dart';
 import '../utils/log_redaction_manager.dart';
@@ -591,6 +592,14 @@ abstract final class PrefsRecovery {
         LogRedactionManager.registerToken(session.cookie);
         // `secret` is CredentialVault ciphertext at rest; the plaintext is not
         // available here, so register the stored form.
+        LogRedactionManager.registerCustomValue(session.secret);
+        LogRedactionManager.registerServerUrl(session.baseUrl);
+        return true;
+      }
+      if (isRivenSessionPrefKey(key)) {
+        final session = RivenSession.decode(encoded);
+        LogRedactionManager.registerToken(session.cookie);
+        // Password or API key, CredentialVault ciphertext at rest like Seerr's.
         LogRedactionManager.registerCustomValue(session.secret);
         LogRedactionManager.registerServerUrl(session.baseUrl);
         return true;
