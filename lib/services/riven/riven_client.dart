@@ -6,9 +6,11 @@ import '../../i18n/strings.g.dart';
 import '../../media/media_kind.dart';
 import '../../models/riven/riven_item.dart';
 import '../../models/riven/riven_session.dart';
+import '../../models/riven/riven_web_item.dart';
 import '../../utils/app_logger.dart';
 import '../trackers/future_coalescer.dart';
 import 'riven_auth_service.dart';
+import 'riven_constants.dart';
 import 'riven_exceptions.dart';
 import 'riven_http_client.dart';
 
@@ -170,6 +172,77 @@ class RivenClient {
     _ => null,
   };
 
+  // ---------- Web app (frontend sessions only) ----------
+
+  /// Whether the session goes through the web app, whose TMDB/AniList proxies
+  /// and id resolver back the discovery shelves. A bare backend has neither.
+  bool get hasWebApp => _session.method == RivenAuthMethod.frontend;
+
+  /// TMDB trending for [kind] over the web app's default window, a day.
+  Future<RivenTmdbPage> getTrending(MediaKind kind, {int page = 1}) =>
+      _tmdbPage('${RivenConstants.tmdbPath}/${_tmdbType(kind)}/day/trending', {'page': page});
+
+  /// TMDB discover sorted by popularity: TMDB's own popular list.
+  Future<RivenTmdbPage> getPopular(MediaKind kind, {int page = 1}) =>
+      _tmdbPage('${RivenConstants.tmdbPath}/discover/${_tmdbType(kind)}', {'sort_by': 'popularity.desc', 'page': page});
+
+  /// TMDB title search. Without `searchMode=search` the route ignores the
+  /// query and answers with discover results.
+  Future<RivenTmdbPage> searchTmdb(MediaKind kind, String query, {int page = 1}) => _tmdbPage(
+    '${RivenConstants.tmdbPath}/search/${_tmdbType(kind)}',
+    {'query': query, 'searchMode': 'search', 'page': page},
+  );
+
+  Future<RivenTmdbPage> _tmdbPage(String path, Map<String, Object?> query) async {
+    final data = await _request('GET', path, query: query, web: true);
+    return RivenTmdbPage.fromJson(data as Map<String, dynamic>);
+  }
+
+  /// AniList trending, 20 per page. The proxy passes AniList's GraphQL
+  /// envelope through (`data.Page.media`) without its page info.
+  Future<List<RivenAnimeItem>> getTrendingAnime({int page = 1}) async {
+    final data = await _request('GET', '${RivenConstants.anilistPath}/trending', query: {'page': page}, web: true);
+    final media = switch (data) {
+      {'data': {'Page': {'media': final List<dynamic> media}}} => media,
+      _ => const <dynamic>[],
+    };
+    return [
+      for (final item in media)
+        if (item is Map<String, dynamic>) RivenAnimeItem.fromJson(item),
+    ];
+  }
+
+  /// The TVDB id of the show TMDB knows as [tmdbId] — the id Riven takes
+  /// shows by — or null when the web app has no mapping.
+  Future<int?> resolveTvdbId(int tmdbId) => _resolve('${RivenConstants.detailsPath}/tmdb/tv/$tmdbId');
+
+  /// The TMDB id of the anime AniList knows as [anilistId], or null when the
+  /// web app has no mapping. The resolver only takes AniList's `TV` and
+  /// `MOVIE` formats apart, so those two stand for every series and film.
+  Future<int?> resolveAnimeTmdbId(int anilistId, {required bool movie}) =>
+      _resolve('${RivenConstants.detailsPath}/anilist/${movie ? 'MOVIE' : 'TV'}/$anilistId');
+
+  static final RegExp _resolvedDetails = RegExp(r'/details/media/(\d+)/(?:tv|movie)$');
+
+  /// Reads the resolver's verdict off its redirect without following it: the
+  /// target page is HTML, the id is in its path. A miss is a 404 (TMDB) or a
+  /// JSON error body (AniList).
+  Future<int?> _resolve(String path) async {
+    final res = await _exchange('GET', path, web: true);
+    final location = res.response.headers['location'];
+    final match = location == null ? null : _resolvedDetails.firstMatch(Uri.tryParse(location)?.path ?? '');
+    if (res.statusCode >= 300 && res.statusCode < 400 && match != null) return int.parse(match.group(1)!);
+    if (res.statusCode == 404 || (res.statusCode == 200 && res.data is Map<String, dynamic>)) return null;
+    RivenHttpClient.throwForStatus(res);
+    return null;
+  }
+
+  static String _tmdbType(MediaKind kind) => switch (kind) {
+    MediaKind.movie => 'movie',
+    MediaKind.show => 'tv',
+    _ => throw ArgumentError('TMDB lists hold movies and shows, not ${kind.name}'),
+  };
+
   // ---------- Internals ----------
 
   Future<dynamic> _request(
@@ -177,11 +250,30 @@ class RivenClient {
     String path, {
     Map<String, Object?>? query,
     Map<String, Object?>? body,
+    bool web = false,
+  }) async {
+    final res = await _exchange(method, path, query: query, body: body, web: web);
+    RivenHttpClient.throwForStatus(res);
+    return res.data;
+  }
+
+  /// One request with the session's auth handling — silent re-login and one
+  /// replay on a login bounce, unlinking on a rejected API key — but no
+  /// status verdict, for callers that read a redirect as the answer.
+  /// [web] addresses [path] from the instance root instead of `/api/v1`.
+  Future<RivenResponse> _exchange(
+    String method,
+    String path, {
+    Map<String, Object?>? query,
+    Map<String, Object?>? body,
+    bool web = false,
   }) async {
     for (var attempt = 0; ; attempt++) {
       _ensureActive();
       final cookieGeneration = _cookieGeneration;
-      final res = await _http.send(method, path, query: query, body: body);
+      final res = web
+          ? await _http.sendWeb(path, query: query)
+          : await _http.send(method, path, query: query, body: body);
       _ensureActive();
       switch (RivenHttpClient.classify(res)) {
         case RivenRejection.session:
@@ -218,8 +310,7 @@ class RivenClient {
         case RivenRejection.credentials || RivenRejection.intermediary || RivenRejection.none:
           break;
       }
-      RivenHttpClient.throwForStatus(res);
-      return res.data;
+      return res;
     }
   }
 

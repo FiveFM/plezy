@@ -13,6 +13,15 @@ abstract final class RivenConstants {
   /// request carries no live session.
   static const String loginPagePath = '/auth/login';
 
+  /// The frontend's TMDB and AniList proxies, which carry its own API keys.
+  static const String tmdbPath = '/api/tmdb';
+  static const String anilistPath = '/api/anilist';
+
+  /// The frontend's id resolver: `GET /details/{indexer}/{type}/{id}` answers
+  /// with a redirect to `/details/media/{id}/{tv|movie}` carrying the mapped
+  /// id — TVDB from `tmdb/tv`, TMDB from `anilist` — or 404 when it has none.
+  static const String detailsPath = '/details';
+
   /// better-auth session cookie, named by the frontend's `cookiePrefix`.
   static const String sessionCookieName = 'riven.session_token';
 

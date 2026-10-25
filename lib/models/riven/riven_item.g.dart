@@ -22,12 +22,9 @@ RivenItem _$RivenItemFromJson(Map<String, dynamic> json) => RivenItem(
   contentRating: json['content_rating'] as String?,
 );
 
-RivenItemPage _$RivenItemPageFromJson(Map<String, dynamic> json) =>
-    RivenItemPage(
-      items: (json['items'] as List<dynamic>)
-          .map((e) => RivenItem.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      page: (json['page'] as num).toInt(),
-      totalPages: (json['total_pages'] as num).toInt(),
-      totalItems: (json['total_items'] as num).toInt(),
-    );
+RivenItemPage _$RivenItemPageFromJson(Map<String, dynamic> json) => RivenItemPage(
+  items: (json['items'] as List<dynamic>).map((e) => RivenItem.fromJson(e as Map<String, dynamic>)).toList(),
+  page: (json['page'] as num).toInt(),
+  totalPages: (json['total_pages'] as num).toInt(),
+  totalItems: (json['total_items'] as num).toInt(),
+);

@@ -509,6 +509,41 @@ void main() {
       expect(invalidated, isFalse);
     });
 
+    test("the web app's own routes re-login on a bounce like the API does", () async {
+      final seen = <(String, String?)>[];
+      final c = client(
+        MockClient((request) async {
+          seen.add((request.url.path, request.headers['Cookie']));
+          return request.headers['Cookie'] == '${RivenConstants.sessionCookieName}=fresh.sig%3D'
+              ? _json({'results': []})
+              : _loginBounce();
+        }),
+        auth: RivenAuthService(httpClientFactory: _signInMock),
+      );
+
+      final page = await c.getTrending(MediaKind.movie);
+
+      expect(page.results, isEmpty);
+      expect(seen.map((call) => call.$1), ['/api/tmdb/movie/day/trending', '/api/tmdb/movie/day/trending']);
+      expect(seen.last.$2, '${RivenConstants.sessionCookieName}=fresh.sig%3D');
+    });
+
+    test('the id resolver reads its redirect, and a wall in front of it is not a miss', () async {
+      final c = client(
+        MockClient((request) async {
+          return switch (request.url.path) {
+            '/details/tmdb/tv/105248' => http.Response('', 307, headers: {'location': '/details/media/384541/tv'}),
+            '/details/tmdb/tv/1' => _json({'message': 'TVDB ID not found for this show'}, status: 404),
+            _ => http.Response('', 302, headers: {'location': 'https://sso.example.com/'}),
+          };
+        }),
+      );
+
+      expect(await c.resolveTvdbId(105248), 384541);
+      expect(await c.resolveTvdbId(1), isNull);
+      await expectLater(c.resolveTvdbId(2), throwsA(isA<RivenProxyException>()));
+    });
+
     test('version refresh adopts a changed backend version', () async {
       RivenSession? updated;
       final c = client(

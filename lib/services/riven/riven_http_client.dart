@@ -144,6 +144,15 @@ class RivenHttpClient {
     origin: authenticated && _cookie != null,
   );
 
+  /// Send a GET to one of the frontend's own routes ([path] from the instance
+  /// root): its TMDB/AniList proxies and id resolver. These exist only on the
+  /// web app, behind the same login as its `/api/v1` proxy.
+  Future<RivenResponse> sendWeb(
+    String path, {
+    Map<String, Object?>? query,
+    Duration timeout = RivenConstants.requestTimeout,
+  }) => _send('GET', path, query: query, timeout: timeout, authenticated: true);
+
   Future<RivenResponse> _send(
     String method,
     String fullPath, {
