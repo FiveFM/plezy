@@ -17,9 +17,11 @@ import 'package:plezy/media/media_version.dart';
 import 'package:plezy/models/catalog/catalog_cast_member.dart';
 import 'package:plezy/models/catalog/catalog_item.dart';
 import 'package:plezy/models/catalog/catalog_metadata.dart';
+import 'package:plezy/models/riven/riven_session.dart';
 import 'package:plezy/models/seerr/seerr_session.dart';
 import 'package:plezy/providers/catalog_sources_provider.dart';
 import 'package:plezy/providers/multi_server_provider.dart';
+import 'package:plezy/providers/riven_account_provider.dart';
 import 'package:plezy/providers/seerr_account_provider.dart';
 import 'package:plezy/screens/catalog_item_detail_screen.dart';
 import 'package:plezy/services/catalog/catalog_source.dart';
@@ -27,6 +29,8 @@ import 'package:plezy/services/catalog/catalog_library_matcher.dart';
 import 'package:plezy/services/catalog/seerr_catalog_source.dart';
 import 'package:plezy/services/data_aggregation_service.dart';
 import 'package:plezy/services/multi_server_manager.dart';
+import 'package:plezy/services/riven/riven_auth_service.dart';
+import 'package:plezy/services/riven/riven_constants.dart';
 import 'package:plezy/services/seerr/seerr_client.dart';
 import 'package:plezy/services/seerr/seerr_auth_service.dart';
 import 'package:plezy/services/seerr/seerr_constants.dart';
@@ -226,6 +230,43 @@ SeerrCatalogSource _seerrSource({int permissions = SeerrPermission.request}) {
   return source;
 }
 
+/// A connected Riven account whose requests [handler] answers. Adopted, not
+/// bound from storage, so no bind-time version read reaches [handler].
+Future<RivenAccountProvider> _rivenAccount(Future<http.Response> Function(http.Request request) handler) async {
+  final account = RivenAccountProvider(authService: RivenAuthService(httpClientFactory: () => MockClient(handler)));
+  addTearDown(account.dispose);
+  await account.adoptSession(
+    const RivenSession(
+      baseUrl: 'https://riven.example.com',
+      method: RivenAuthMethod.frontend,
+      identifier: 'alice',
+      secret: '',
+      cookie: 'cookie',
+      userId: 'user-1',
+      displayName: 'Alice',
+      version: '1.0.0',
+      createdAt: 0,
+    ),
+  );
+  return account;
+}
+
+http.Response _rivenItems(List<String> states) => http.Response(
+  jsonEncode({
+    'success': true,
+    'items': [
+      for (final state in states)
+        {'id': '42', 'title': 'Catalog Movie', 'type': 'movie', 'tmdb_id': '1', 'state': state, 'requested_at': 'None'},
+    ],
+    'page': 1,
+    'limit': 1,
+    'total_items': states.length,
+    'total_pages': states.isEmpty ? 0 : 1,
+  }),
+  200,
+  headers: {'content-type': 'application/json'},
+);
+
 class _FakeCatalogLibraryMatcher extends CatalogLibraryMatcher {
   _FakeCatalogLibraryMatcher(super.multiServer, this.matches);
 
@@ -315,6 +356,7 @@ Future<void> _pumpDetail(
   CatalogLibraryMatcher Function(MultiServerProvider multiServer)? matcherBuilder,
   SeerrCatalogSource? seerr,
   SeerrAccountProvider? account,
+  RivenAccountProvider? riven,
   bool settle = true,
 }) async {
   final sources = _FakeCatalogSourcesProvider(source, seerr: seerr);
@@ -335,6 +377,7 @@ Future<void> _pumpDetail(
           ChangeNotifierProvider<CatalogSourcesProvider>.value(value: sources),
           ChangeNotifierProvider<MultiServerProvider>.value(value: multiServer),
           if (account != null) ChangeNotifierProvider<SeerrAccountProvider>.value(value: account),
+          if (riven != null) ChangeNotifierProvider<RivenAccountProvider>.value(value: riven),
         ],
         child: MaterialApp(
           theme: monoTheme(MonoPalette.dark),
@@ -543,6 +586,99 @@ void main() {
       await tester.pump();
 
       expect(find.byTooltip(t.seerr.request), findsNothing);
+    });
+  });
+
+  group('Riven action', () {
+    testWidgets('offers an untracked movie to Riven by its TMDB id, then shows it requested', (tester) async {
+      Object? added;
+      var tracked = false;
+      final riven = (await tester.runAsync(
+        () => _rivenAccount((request) async {
+          if (request.url.path == '/api/v1/items/add') {
+            added = jsonDecode(request.body);
+            return http.Response(jsonEncode({'message': 'Added 1 item(s) to the queue'}), 200);
+          }
+          expect(request.url.queryParameters['search'], 'tmdb_1');
+          return _rivenItems(tracked ? ['Indexed'] : []);
+        }),
+      ))!;
+
+      await _pumpDetail(tester, _FakeCatalogSource(), riven: riven);
+      expect(find.byTooltip(t.riven.request), findsOneWidget);
+
+      await tester.tap(find.byTooltip(t.riven.request));
+      await tester.pumpAndSettle();
+
+      expect(added, {
+        'tmdb_ids': ['1'],
+        'media_type': 'movie',
+      });
+      // Riven persists the item only once indexed; until then it reads as
+      // requested rather than offering the request again.
+      final requested = t.riven.status(state: t.riven.states.requested);
+      expect(find.byTooltip(t.riven.request), findsNothing);
+      expect(find.byTooltip(requested), findsOneWidget);
+      expect(find.text(requested), findsOneWidget);
+
+      tracked = true;
+      await tester.pump(RivenConstants.statePollInterval);
+      await tester.pumpAndSettle();
+      expect(find.text(t.riven.status(state: t.riven.states.indexed)), findsOneWidget);
+    });
+
+    testWidgets('reports where Riven is with a tracked title', (tester) async {
+      final riven = (await tester.runAsync(() => _rivenAccount((request) async => _rivenItems(['Scraped']))))!;
+
+      await _pumpDetail(tester, _FakeCatalogSource(), riven: riven);
+
+      final status = t.riven.status(state: t.riven.states.scraped);
+      expect(find.byTooltip(status), findsOneWidget);
+      expect(find.text(status), findsOneWidget);
+      expect(find.byTooltip(t.riven.request), findsNothing);
+    });
+
+    testWidgets('a show without a TVDB id is not offered: Riven takes shows by TVDB only', (tester) async {
+      final riven = (await tester.runAsync(() => _rivenAccount((request) async => _rivenItems([]))))!;
+
+      await _pumpDetail(
+        tester,
+        _FakeCatalogSource(),
+        riven: riven,
+        item: const CatalogItem(
+          source: CatalogSourceId.trakt,
+          kind: MediaKind.show,
+          title: 'Catalog Show',
+          ids: CatalogItemIds(tmdb: 7, imdb: 'tt7'),
+        ),
+      );
+
+      expect(find.byTooltip(t.riven.request), findsNothing);
+    });
+
+    testWidgets('a title reaching the library asks the media servers again', (tester) async {
+      var state = 'Symlinked';
+      final riven = (await tester.runAsync(() => _rivenAccount((request) async => _rivenItems([state]))))!;
+      late _ScriptedMatcher matcher;
+
+      await _pumpDetail(
+        tester,
+        _FakeCatalogSource(),
+        riven: riven,
+        matcherBuilder: (multiServer) => matcher = _ScriptedMatcher(multiServer, [
+          () => libraryLookupResult(const [], succeeded: {'server-1'}),
+          () => libraryLookupResult([_libraryCopy(id: 'riven-copy', libraryTitle: 'Movies')]),
+        ]),
+      );
+      expect(find.text('Movies'), findsNothing);
+
+      state = 'Completed';
+      await tester.pump(RivenConstants.statePollInterval);
+      await tester.pumpAndSettle();
+
+      expect(matcher.calls, 2);
+      expect(find.text('Movies'), findsOneWidget);
+      expect(find.text(t.riven.status(state: t.riven.states.completed)), findsOneWidget);
     });
   });
 

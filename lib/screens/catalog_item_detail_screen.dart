@@ -20,20 +20,26 @@ import '../i18n/strings.g.dart';
 import '../media/media_hub.dart';
 import '../media/media_item.dart';
 import '../media/media_item_merge.dart';
+import '../media/media_kind.dart';
 import '../media/media_rating.dart';
 import '../media/media_version.dart';
 import '../models/catalog/catalog_cast_member.dart';
 import '../models/catalog/catalog_item.dart';
 import '../models/catalog/catalog_labels.dart';
 import '../models/catalog/catalog_metadata.dart';
+import '../models/riven/riven_item.dart';
 import '../providers/catalog_sources_provider.dart';
 import '../providers/multi_server_provider.dart';
+import '../providers/riven_account_provider.dart';
 import '../providers/seerr_account_provider.dart';
 import '../services/catalog/catalog_library_matcher.dart';
 import '../services/catalog/catalog_source.dart';
 import '../services/catalog/community_ratings.dart';
 import '../services/catalog/seerr_catalog_source.dart';
 import '../services/data_aggregation_service.dart';
+import '../services/riven/riven_client.dart';
+import '../services/riven/riven_constants.dart';
+import '../services/riven/riven_exceptions.dart';
 import '../utils/app_logger.dart';
 import '../utils/catalog_navigation_helper.dart';
 import '../utils/desktop_window_padding.dart';
@@ -54,6 +60,8 @@ import '../widgets/focusable_list_tile.dart';
 import '../widgets/hub_section.dart';
 import '../widgets/optimized_media_image.dart';
 import '../widgets/overlay_sheet.dart';
+import '../widgets/riven_item_sheet.dart';
+import '../widgets/riven_mark.dart';
 import '../widgets/seerr_request_sheet.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/stat_chip.dart';
@@ -126,6 +134,22 @@ class _CatalogItemDetailScreenState extends State<CatalogItemDetailScreen> {
   /// label spent a whole hub row — header, scroll row, one card — on it.
   List<({CatalogRelationType type, CatalogItem item})> _relationEntries = const [];
 
+  /// The Riven client [_rivenItem] was read through; a reconnect swaps it and
+  /// a disconnect drops it, and either retires what the old one reported.
+  RivenClient? _rivenClient;
+
+  /// What Riven tracks for this title; null while unread, when untracked, or
+  /// with Riven disconnected — [_rivenLookedUp] tells "untracked" apart.
+  RivenItem? _rivenItem;
+  bool _rivenLookedUp = false;
+
+  /// A request was accepted but the item has not shown up in the list yet:
+  /// Riven queues the add and persists the item only once it is indexed.
+  bool _rivenAwaitingItem = false;
+  bool _rivenRequesting = false;
+  int _rivenLookupGeneration = 0;
+  Timer? _rivenPoll;
+
   @override
   void initState() {
     super.initState();
@@ -147,7 +171,24 @@ class _CatalogItemDetailScreenState extends State<CatalogItemDetailScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Nullable: hosts without the profile session scope (tests) have no
+    // Riven account at all.
+    final client = context.watch<RivenAccountProvider?>()?.client;
+    if (identical(client, _rivenClient)) return;
+    _rivenClient = client;
+    _rivenPoll?.cancel();
+    _rivenLookupGeneration++;
+    _rivenItem = null;
+    _rivenLookedUp = false;
+    _rivenAwaitingItem = false;
+    if (client != null) unawaited(_refreshRiven());
+  }
+
+  @override
   void dispose() {
+    _rivenPoll?.cancel();
     _backButtonFocusNode.dispose();
     _spoilerTagFocusNode.dispose();
     _overviewFocusNode.dispose();
@@ -311,6 +352,9 @@ class _CatalogItemDetailScreenState extends State<CatalogItemDetailScreen> {
         if (gainedIds || gainedTitles) {
           unawaited(_resolveMatches(detail.item));
         }
+        // Riven keys shows by TVDB, which a Plex Discover row only carries
+        // once the detail body arrives.
+        if (gainedIds && _rivenItem == null) unawaited(_refreshRiven());
       } catch (e) {
         appLogger.d('Catalog detail load failed for ${widget.item.identityKey}', error: e);
       }
@@ -354,7 +398,86 @@ class _CatalogItemDetailScreenState extends State<CatalogItemDetailScreen> {
   /// with the detail fetch (issue #1959).
   bool get _canRequest => _requestSource != null && _item.ids.tmdb != null;
 
-  bool get _hasActions => _watchlistSource != null || _canRequest || _hasTrailer;
+  bool get _hasActions => _watchlistSource != null || _canRequest || _hasTrailer || _hasRivenAction;
+
+  /// Riven takes movies by TMDB id and shows by TVDB id, nothing else.
+  bool get _canRequestFromRiven {
+    if (_rivenClient == null || !_rivenLookedUp || _rivenItem != null || _rivenAwaitingItem) return false;
+    final ids = _item.ids;
+    return switch (_item.kind) {
+      MediaKind.movie => ids.tmdb != null,
+      MediaKind.show => ids.tvdb != null,
+      _ => false,
+    };
+  }
+
+  /// What the Riven chip and action show: the tracked item's state, or
+  /// [RivenItemState.requested] for an accepted request still being indexed.
+  RivenItemState? get _rivenState => _rivenItem?.state ?? (_rivenAwaitingItem ? RivenItemState.requested : null);
+
+  bool get _hasRivenAction => _rivenState != null || _canRequestFromRiven;
+
+  /// Read what Riven reports for the title and keep reading while Riven works
+  /// on it. A finished lookup with no item is what offers the request.
+  Future<void> _refreshRiven() async {
+    final client = _rivenClient;
+    final item = _item;
+    if (client == null || (item.kind != MediaKind.movie && item.kind != MediaKind.show)) return;
+    final generation = ++_rivenLookupGeneration;
+    _rivenPoll?.cancel();
+    try {
+      final found = await client.findItem(
+        item.kind,
+        tmdbId: item.ids.tmdb,
+        tvdbId: item.ids.tvdb,
+        imdbId: item.ids.imdb,
+      );
+      if (!mounted || generation != _rivenLookupGeneration || !identical(client, _rivenClient)) return;
+      final wasAvailable = _rivenItem?.state.isAvailable ?? false;
+      setState(() {
+        _rivenItem = found;
+        _rivenLookedUp = true;
+        if (found != null) _rivenAwaitingItem = false;
+      });
+      // Riven just put the file in the library mount and asked the media
+      // server to scan it: look for the copy again.
+      if (!wasAvailable && (found?.state.isAvailable ?? false)) unawaited(_resolveMatches(_item));
+    } catch (e) {
+      appLogger.d('Riven lookup failed for ${item.identityKey}', error: e);
+      if (!mounted || generation != _rivenLookupGeneration) return;
+    }
+    if ((_rivenItem?.state.isInProgress ?? false) || _rivenAwaitingItem) {
+      _rivenPoll = Timer(RivenConstants.statePollInterval, () => unawaited(_refreshRiven()));
+    }
+  }
+
+  Future<void> _requestFromRiven() async {
+    final client = _rivenClient;
+    if (client == null || _rivenRequesting) return;
+    final item = _item;
+    setState(() => _rivenRequesting = true);
+    try {
+      await client.addItem(item.kind, tmdbId: item.ids.tmdb, tvdbId: item.ids.tvdb);
+      if (!mounted || !identical(client, _rivenClient)) return;
+      showSuccessSnackBar(context, t.riven.requestSubmitted);
+      setState(() => _rivenAwaitingItem = true);
+      unawaited(_refreshRiven());
+    } catch (e) {
+      appLogger.w('Riven request failed for ${item.identityKey}', error: e);
+      if (mounted) showErrorSnackBar(context, t.riven.requestFailed(error: rivenErrorReason(e)));
+    } finally {
+      if (mounted) setState(() => _rivenRequesting = false);
+    }
+  }
+
+  Future<void> _openRivenSheet(BuildContext hostContext, RivenItem riven) async {
+    final client = _rivenClient;
+    if (client == null) return;
+    final action = await showRivenItemSheet(hostContext, client: client, item: riven, title: _item.title);
+    if (action == null || !mounted || !identical(client, _rivenClient)) return;
+    if (action == RivenItemAction.removed) setState(() => _rivenItem = null);
+    unawaited(_refreshRiven());
+  }
 
   bool get _hasLibraryMatches => _libraryMatchFocusNodes.isNotEmpty;
 
@@ -834,6 +957,15 @@ class _CatalogItemDetailScreenState extends State<CatalogItemDetailScreen> {
       if (server.availableSeasons case final available? when server.totalSeasons != null) {
         add(t.explore.badge.seasonsAvailable(available: available, total: server.totalSeasons!));
       }
+    }
+
+    if (_rivenState case final RivenItemState state) {
+      chips.add(
+        StatChip(
+          leading: const RivenMark(size: 14),
+          label: t.riven.status(state: rivenStateLabel(state)),
+        ),
+      );
     }
 
     if (chips.isEmpty) return null;
@@ -1478,6 +1610,31 @@ class _CatalogItemDetailScreenState extends State<CatalogItemDetailScreen> {
                                                       title: item.title,
                                                     ),
                                                   ),
+                                                ),
+                                              if (_rivenState case final RivenItemState state)
+                                                FocusableAction(
+                                                  // Shares its identity with the request action it
+                                                  // replaces, so focus survives the request landing.
+                                                  debugLabel: 'catalog_riven',
+                                                  icon: rivenStateIcon(state),
+                                                  iconColor: rivenStateColor(state, theme.colorScheme),
+                                                  tooltip: t.riven.status(state: rivenStateLabel(state)),
+                                                  // Nothing to act on until Riven has the item.
+                                                  onPressed: switch (_rivenItem) {
+                                                    final RivenItem riven => () => unawaited(
+                                                      _openRivenSheet(hostContext, riven),
+                                                    ),
+                                                    null => null,
+                                                  },
+                                                )
+                                              else if (_canRequestFromRiven)
+                                                FocusableAction(
+                                                  debugLabel: 'catalog_riven',
+                                                  icon: Symbols.cloud_download_rounded,
+                                                  tooltip: t.riven.request,
+                                                  onPressed: _rivenRequesting
+                                                      ? null
+                                                      : () => unawaited(_requestFromRiven()),
                                                 ),
                                               if (item.trailerUrl?.trim() case final trailer? when trailer.isNotEmpty)
                                                 FocusableAction(
