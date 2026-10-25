@@ -22,6 +22,7 @@ import 'package:plezy/providers/account_preferences_controller.dart';
 import 'package:plezy/providers/hidden_libraries_provider.dart';
 import 'package:plezy/providers/libraries_provider.dart';
 import 'package:plezy/providers/download_provider.dart';
+import 'package:plezy/providers/riven_account_provider.dart';
 import 'package:plezy/providers/seerr_account_provider.dart';
 import 'package:plezy/providers/theme_provider.dart';
 import 'package:plezy/providers/trackers_provider.dart';
@@ -629,6 +630,7 @@ class _SettingsHarness {
     required this.trackers,
     required this.trackerHttpClients,
     required this.seerr,
+    required this.riven,
     required this.downloadManager,
     required this.downloadProvider,
     required this.locationEvents,
@@ -644,6 +646,7 @@ class _SettingsHarness {
   final TrackersProvider trackers;
   final List<FakeHttpClient> trackerHttpClients;
   final SeerrAccountProvider seerr;
+  final RivenAccountProvider riven;
   final DownloadManagerService downloadManager;
   final DownloadProvider downloadProvider;
   final List<String> locationEvents;
@@ -659,6 +662,7 @@ class _SettingsHarness {
     theme.dispose();
     trackers.dispose();
     seerr.dispose();
+    riven.dispose();
     activeProfile.dispose();
     accountPreferences.dispose();
     await plexHome.dispose();
@@ -716,6 +720,7 @@ Future<_SettingsHarness> _pumpSettingsScreen(
 
   final trackers = TrackersProvider(httpClientFactory: trackerHttpClientFactory);
   final seerr = SeerrAccountProvider();
+  final riven = RivenAccountProvider();
   // Left unattached: with no registries wired it resolves no accounts, so the
   // Account preferences row stays hidden and these tests keep their existing
   // section list.
@@ -757,6 +762,7 @@ Future<_SettingsHarness> _pumpSettingsScreen(
     trackers: trackers,
     trackerHttpClients: trackerHttpClients,
     seerr: seerr,
+    riven: riven,
     downloadManager: downloadManager,
     downloadProvider: downloadProvider,
     locationEvents: locationEvents,
@@ -773,6 +779,7 @@ Future<_SettingsHarness> _pumpSettingsScreen(
           ChangeNotifierProvider<ThemeProvider>.value(value: theme),
           ChangeNotifierProvider<TrackersProvider>.value(value: trackers),
           ChangeNotifierProvider<SeerrAccountProvider>.value(value: seerr),
+          ChangeNotifierProvider<RivenAccountProvider>.value(value: riven),
           ChangeNotifierProvider<DownloadProvider>.value(value: downloadProvider),
           ChangeNotifierProvider<AccountPreferencesController>.value(value: accountPreferences),
         ],

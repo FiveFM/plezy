@@ -26,6 +26,7 @@ import '../../services/file_picker_service.dart';
 import '../../services/saf_storage_service.dart';
 import '../../services/settings_export_service.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/riven_account_provider.dart';
 import '../../providers/seerr_account_provider.dart';
 import '../../services/account_preferences_accounts.dart';
 import '../../services/keyboard_shortcuts_service.dart';
@@ -329,12 +330,13 @@ class _SettingsScreenState extends State<SettingsScreen> with FocusableTab, Moun
 
   Widget _buildServicesTile() {
     // The tracker account providers are watched through [TrackerServiceInfo].
-    return Consumer<SeerrAccountProvider>(
-      builder: (context, seerr, _) {
+    return Consumer2<SeerrAccountProvider, RivenAccountProvider>(
+      builder: (context, seerr, riven, _) {
         final connectedNames = <String>[
           for (final info in TrackerServiceInfo.all)
             if (info.isConnected(context)) info.displayName,
           if (seerr.isConnected) t.services.names.seerr,
+          if (riven.isConnected) t.services.names.riven,
         ];
         final subtitle = connectedNames.isEmpty ? t.settings.servicesDescription : connectedNames.join(' · ');
         return SettingNavigationTile(

@@ -30,6 +30,9 @@
   "lib/screens/settings/seerr_connect_screen.dart": {
     "https://seerr.example.com": "Intentional server URL example"
   },
+  "lib/screens/settings/riven_connect_screen.dart": {
+    "https://riven.example.com": "Intentional server URL example"
+  },
   "lib/screens/settings/external_player_screen.dart": {
     "myplayer://play?url=": "Intentional URL scheme example",
     "com.example.player": "Intentional Android package example",
